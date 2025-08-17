@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="版本和环境 istio版本：1.27.0, Ambient docker: Docker desktop 28.3.0 k8s部署方式：minikube in wsl k8s版本：v1.32.2  参考：Istio叫板Spring Cloud：替代之路，道阻且长？。 镜像准备参照https:&#x2F;&#x2F;github.com&#x2F;togettoyou&#x2F;hub-mirror提前准备镜像。请注意流水线会将&#x2F;改为.，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ISTIO Ambient学习">
+<meta property="og:url" content="http://example.com/2025/08/17/istio-setup/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="版本和环境 istio版本：1.27.0, Ambient docker: Docker desktop 28.3.0 k8s部署方式：minikube in wsl k8s版本：v1.32.2  参考：Istio叫板Spring Cloud：替代之路，道阻且长？。 镜像准备参照https:&#x2F;&#x2F;github.com&#x2F;togettoyou&#x2F;hub-mirror提前准备镜像。请注意流水线会将&#x2F;改为.，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-17T11:04:51.000Z">
+<meta property="article:modified_time" content="2025-08-17T15:07:31.042Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="istio">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>ISTIO Ambient学习 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":"O0NEmag6MAKy1sjuqSM24x4G-gzGzoHsz","app_key":"v1DhCZsGWo4y0g488HvZ4Lv3","server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>SHAREWORK</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ISTIO Ambient学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-17 19:04" pubdate>
+          2025年8月17日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          885 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          8 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ISTIO Ambient学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="版本和环境"><a href="#版本和环境" class="headerlink" title="版本和环境"></a>版本和环境</h2><ul>
+<li>istio版本：1.27.0, Ambient</li>
+<li>docker: Docker desktop 28.3.0</li>
+<li>k8s部署方式：minikube in wsl</li>
+<li>k8s版本：v1.32.2</li>
+</ul>
+<p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1887475409110692661">Istio叫板Spring Cloud：替代之路，道阻且长？</a>。</p>
+<h2 id="镜像准备"><a href="#镜像准备" class="headerlink" title="镜像准备"></a>镜像准备</h2><p>参照<code>https://github.com/togettoyou/hub-mirror</code>提前准备镜像。请注意流水线会将<code>/</code>改为<code>.</code>，因此镜像名<code>quay.io/kiali/kiali:v2.12</code>在流水线完成后，推送到目的仓库会编程<code>quay.io.kiali.kiali:v2.12</code>。</p>
+<p>需准备的镜像包括：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">istio</span>/install-cni:<span class="hljs-number">1</span>.<span class="hljs-number">27</span>.<span class="hljs-number">0</span>-distroless<br><span class="hljs-attribute">istio</span>/proxyv2:<span class="hljs-number">1</span>.<span class="hljs-number">27</span>.<span class="hljs-number">0</span>-distroless<br><span class="hljs-attribute">istio</span>/ztunnel:<span class="hljs-number">1</span>.<span class="hljs-number">27</span>.<span class="hljs-number">0</span>-distroless<br><span class="hljs-attribute">istio</span>/pilot:<span class="hljs-number">1</span>.<span class="hljs-number">27</span>.<span class="hljs-number">0</span>-distroless<br><span class="hljs-attribute">quay</span>.io/kiali/kiali:v2.<span class="hljs-number">12</span><br><span class="hljs-attribute">ghcr</span>.io/prometheus-operator/prometheus-config-reloader:v0.<span class="hljs-number">83</span>.<span class="hljs-number">0</span><br><span class="hljs-attribute">prom</span>/prometheus:v3.<span class="hljs-number">4</span>.<span class="hljs-number">2</span><br><span class="hljs-attribute">grafana</span>/grafana:<span class="hljs-number">12</span>.<span class="hljs-number">0</span>.<span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="Kubernetes-Gateway-API"><a href="#Kubernetes-Gateway-API" class="headerlink" title="Kubernetes Gateway API"></a>Kubernetes Gateway API</h2><p>Kubernetes Gateway API 是一个 Kubernetes 的官方项目，用于配置网络流量的标准 API，它提供了一种声明式的方式来配置 Kubernetes 集群中的网络流量路由。</p>
+<p>其提供了一种更强大、更灵活的 API 来替代传统的 Ingress API。它专门设计用于处理集群内外的网络流量路由，支持更复杂的流量管理场景。</p>
+<h3 id="主要功能"><a href="#主要功能" class="headerlink" title="主要功能"></a>主要功能</h3><h4 id="多层网络抽象"><a href="#多层网络抽象" class="headerlink" title="多层网络抽象"></a><strong>多层网络抽象</strong></h4><ul>
+<li><strong>GatewayClass</strong>: 定义网关的类型和实现</li>
+<li><strong>Gateway</strong>: 定义具体的网关实例</li>
+<li><strong>HTTPRoute&#x2F;TCPRoute&#x2F;UDPRoute</strong>: 定义具体的路由规则</li>
+</ul>
+<h4 id="高级流量管理"><a href="#高级流量管理" class="headerlink" title="高级流量管理"></a><strong>高级流量管理</strong></h4><ul>
+<li>基于路径、头部、查询参数的路由</li>
+<li>流量分割和权重分配</li>
+<li>请求&#x2F;响应修改</li>
+<li>重定向和重写</li>
+<li>超时和重试配置</li>
+</ul>
+<h4 id="多协议支持"><a href="#多协议支持" class="headerlink" title="多协议支持"></a><strong>多协议支持</strong></h4><ul>
+<li>HTTP&#x2F;HTTPS</li>
+<li>TCP</li>
+<li>UDP</li>
+<li>gRPC</li>
+</ul>
+<h4 id="安全特性"><a href="#安全特性" class="headerlink" title="安全特性"></a><strong>安全特性</strong></h4><ul>
+<li>TLS 终止和透传</li>
+<li>证书管理</li>
+<li>访问控制</li>
+</ul>
+<p>详情参见<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/concepts/services-networking/gateway/">官方文档</a>。</p>
+<p>当前集群的<code>gateway-class</code>:</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">~$ kubectl <span class="hljs-keyword">get</span> gatewayclass<br><span class="hljs-type">NAME</span>             CONTROLLER                    ACCEPTED   AGE<br>istio            istio.io/gateway-controller   <span class="hljs-keyword">True</span>       <span class="hljs-number">26</span>h<br>istio-remote     istio.io/unmanaged-gateway    <span class="hljs-keyword">True</span>       <span class="hljs-number">26</span>h<br>istio-waypoint   istio.io/mesh-controller      <span class="hljs-keyword">True</span>       <span class="hljs-number">26</span>h<br></code></pre></td></tr></table></figure>
+
+<p>当前集群的<code>gateway</code>:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-string">~$</span> <span class="hljs-string">kubectl</span> <span class="hljs-string">describe</span> <span class="hljs-string">gateway</span> <span class="hljs-string">bookinfo-gateway</span><br><span class="hljs-attr">Name:</span>         <span class="hljs-string">bookinfo-gateway</span><br><span class="hljs-attr">Namespace:</span>    <span class="hljs-string">istio-lab</span><br><span class="hljs-attr">Labels:</span>       <span class="hljs-string">&lt;none&gt;</span><br><span class="hljs-attr">Annotations:  networking.istio.io/service-type:</span> <span class="hljs-string">ClusterIP</span><br><span class="hljs-attr">API Version:</span>  <span class="hljs-string">gateway.networking.k8s.io/v1</span><br><span class="hljs-attr">Kind:</span>         <span class="hljs-string">Gateway</span><br><span class="hljs-attr">Metadata:</span><br>  <span class="hljs-attr">Creation Timestamp:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>  <span class="hljs-attr">Generation:</span>          <span class="hljs-number">1</span><br>  <span class="hljs-attr">Resource Version:</span>    <span class="hljs-number">53229</span><br>  <span class="hljs-attr">UID:</span>                 <span class="hljs-string">bb521fdc-e2e7-4da0-acee-7bf70e1b5d5d</span><br><span class="hljs-attr">Spec:</span><br>  <span class="hljs-attr">Gateway Class Name:</span>  <span class="hljs-string">istio</span><br>  <span class="hljs-attr">Listeners:</span><br>    <span class="hljs-attr">Allowed Routes:</span><br>      <span class="hljs-attr">Namespaces:</span><br>        <span class="hljs-attr">From:</span>  <span class="hljs-string">Same</span><br>    <span class="hljs-attr">Name:</span>      <span class="hljs-string">http</span><br>    <span class="hljs-attr">Port:</span>      <span class="hljs-number">80</span><br>    <span class="hljs-attr">Protocol:</span>  <span class="hljs-string">HTTP</span><br><span class="hljs-attr">Status:</span><br>  <span class="hljs-attr">Addresses:</span><br>    <span class="hljs-attr">Type:</span>   <span class="hljs-string">Hostname</span><br>    <span class="hljs-attr">Value:</span>  <span class="hljs-string">bookinfo-gateway-istio.istio-lab.svc.cluster.local</span><br>  <span class="hljs-attr">Conditions:</span><br>    <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>    <span class="hljs-attr">Message:</span>               <span class="hljs-string">Resource</span> <span class="hljs-string">accepted</span><br>    <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>    <span class="hljs-attr">Reason:</span>                <span class="hljs-string">Accepted</span><br>    <span class="hljs-attr">Status:</span>                <span class="hljs-literal">True</span><br>    <span class="hljs-attr">Type:</span>                  <span class="hljs-string">Accepted</span><br>    <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-17T02:47:17Z</span><br>    <span class="hljs-attr">Message:</span>               <span class="hljs-string">Resource</span> <span class="hljs-string">programmed,</span> <span class="hljs-string">assigned</span> <span class="hljs-string">to</span> <span class="hljs-string">service(s)</span> <span class="hljs-string">bookinfo-gateway-istio.istio-lab.svc.cl</span><br><span class="hljs-string">uster.local:80</span><br>    <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>    <span class="hljs-attr">Reason:</span>                <span class="hljs-string">Programmed</span><br>    <span class="hljs-attr">Status:</span>                <span class="hljs-literal">True</span><br>    <span class="hljs-attr">Type:</span>                  <span class="hljs-string">Programmed</span><br>  <span class="hljs-attr">Listeners:</span><br>    <span class="hljs-attr">Attached Routes:</span>  <span class="hljs-number">1</span><br>    <span class="hljs-attr">Conditions:</span><br>      <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>      <span class="hljs-attr">Message:</span>               <span class="hljs-literal">No</span> <span class="hljs-string">errors</span> <span class="hljs-string">found</span><br>      <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>      <span class="hljs-attr">Reason:</span>                <span class="hljs-string">Accepted</span><br>      <span class="hljs-attr">Status:</span>                <span class="hljs-literal">True</span><br>      <span class="hljs-attr">Type:</span>                  <span class="hljs-string">Accepted</span><br>      <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>      <span class="hljs-attr">Message:</span>               <span class="hljs-literal">No</span> <span class="hljs-string">errors</span> <span class="hljs-string">found</span><br>      <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>      <span class="hljs-attr">Reason:</span>                <span class="hljs-string">NoConflicts</span><br>      <span class="hljs-attr">Status:</span>                <span class="hljs-literal">False</span><br>      <span class="hljs-attr">Type:</span>                  <span class="hljs-string">Conflicted</span><br>      <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>      <span class="hljs-attr">Message:</span>               <span class="hljs-literal">No</span> <span class="hljs-string">errors</span> <span class="hljs-string">found</span><br>      <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>      <span class="hljs-attr">Reason:</span>                <span class="hljs-string">Programmed</span><br>      <span class="hljs-attr">Status:</span>                <span class="hljs-literal">True</span><br>      <span class="hljs-attr">Type:</span>                  <span class="hljs-string">Programmed</span><br>      <span class="hljs-attr">Last Transition Time:</span>  <span class="hljs-number">2025-08-16T16:14:08Z</span><br>      <span class="hljs-attr">Message:</span>               <span class="hljs-literal">No</span> <span class="hljs-string">errors</span> <span class="hljs-string">found</span><br>      <span class="hljs-attr">Observed Generation:</span>   <span class="hljs-number">1</span><br>      <span class="hljs-attr">Reason:</span>                <span class="hljs-string">ResolvedRefs</span><br>      <span class="hljs-attr">Status:</span>                <span class="hljs-literal">True</span><br>      <span class="hljs-attr">Type:</span>                  <span class="hljs-string">ResolvedRefs</span><br>    <span class="hljs-attr">Name:</span>                    <span class="hljs-string">http</span><br>    <span class="hljs-attr">Supported Kinds:</span><br>      <span class="hljs-attr">Group:</span>  <span class="hljs-string">gateway.networking.k8s.io</span><br>      <span class="hljs-attr">Kind:</span>   <span class="hljs-string">HTTPRoute</span><br>      <span class="hljs-attr">Group:</span>  <span class="hljs-string">gateway.networking.k8s.io</span><br>      <span class="hljs-attr">Kind:</span>   <span class="hljs-string">GRPCRoute</span><br><span class="hljs-attr">Events:</span>       <span class="hljs-string">&lt;none&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>下列信息表示 Gateway API 资源已经成功配置并分配给了指定的 Kubernetes 服务。</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus">Resource programmed, assigned to <span class="hljs-built_in">service</span>(s) bookinfo-gateway-istio<span class="hljs-selector-class">.istio-lab</span><span class="hljs-selector-class">.svc</span><span class="hljs-selector-class">.cl</span><br>uster<span class="hljs-selector-class">.local</span>:<span class="hljs-number">80</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="AuthorizationPolicy"><a href="#AuthorizationPolicy" class="headerlink" title="AuthorizationPolicy"></a>AuthorizationPolicy</h2><h3 id="概念与基本配置方法"><a href="#概念与基本配置方法" class="headerlink" title="概念与基本配置方法"></a>概念与基本配置方法</h3><p>AuthorizationPolicy 是 Istio 中用于控制服务间访问权限的重要安全策略，正确配置可以显著提高集群的安全性。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">security.istio.io/v1beta1</span><br><span class="hljs-attr">kind:</span> <span class="hljs-string">AuthorizationPolicy</span><br><span class="hljs-attr">metadata:</span><br>  <span class="hljs-attr">name:</span> <span class="hljs-string">&lt;策略名称&gt;</span><br>  <span class="hljs-attr">namespace:</span> <span class="hljs-string">&lt;命名空间&gt;</span><br><span class="hljs-attr">spec:</span><br>  <span class="hljs-attr">selector:</span><br>    <span class="hljs-attr">matchLabels:</span><br>      <span class="hljs-attr">app:</span> <span class="hljs-string">&lt;目标服务标签&gt;</span><br>  <span class="hljs-attr">rules:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">from:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">source:</span><br>        <span class="hljs-attr">principals:</span> [<span class="hljs-string">&quot;cluster.local/ns/default/sa/default&quot;</span>]<br>    <span class="hljs-attr">to:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">operation:</span><br>        <span class="hljs-attr">methods:</span> [<span class="hljs-string">&quot;GET&quot;</span>]<br>        <span class="hljs-attr">paths:</span> [<span class="hljs-string">&quot;/api/v1/*&quot;</span>]<br>    <span class="hljs-attr">when:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">request.auth.claims[iss]</span><br>      <span class="hljs-attr">values:</span> [<span class="hljs-string">&quot;https://accounts.google.com&quot;</span>]<br></code></pre></td></tr></table></figure>
+
+<p>在示例教程中的配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs bash">kubectl apply -f - &lt;&lt;<span class="hljs-string">EOF</span><br><span class="hljs-string">apiVersion: security.istio.io/v1</span><br><span class="hljs-string">kind: AuthorizationPolicy</span><br><span class="hljs-string">metadata:</span><br><span class="hljs-string">  name: productpage-ztunnel</span><br><span class="hljs-string">  namespace: istio-lab</span><br><span class="hljs-string">spec:</span><br><span class="hljs-string">  selector:</span><br><span class="hljs-string">    matchLabels:</span><br><span class="hljs-string">      app: productpage</span><br><span class="hljs-string">  action: ALLOW</span><br><span class="hljs-string">  rules:</span><br><span class="hljs-string">  - from:</span><br><span class="hljs-string">    - source:</span><br><span class="hljs-string">        principals:</span><br><span class="hljs-string">        - cluster.local/ns/istio-lab/sa/bookinfo-gateway-istio</span><br><span class="hljs-string">EOF</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="四层和七层授权控制规则"><a href="#四层和七层授权控制规则" class="headerlink" title="四层和七层授权控制规则"></a>四层和七层授权控制规则</h3><p><strong>4层流量控制</strong></p>
+<ul>
+<li>协议级别: TCP、UDP 等传输层协议</li>
+<li>端口级别: 基于端口号进行路由</li>
+<li>无状态: 不解析应用层内容</li>
+<li>性能高: 开销较小，延迟低</li>
+</ul>
+<p><strong>7层流量控制</strong></p>
+<ul>
+<li>协议级别: HTTP&#x2F;HTTPS、gRPC 等应用层协议</li>
+<li>内容感知: 可以解析请求内容</li>
+<li>智能路由: 基于路径、头部、查询参数等</li>
+<li>功能丰富: 支持复杂的流量管理策略</li>
+</ul>
+<h2 id="Waypoint-Proxy"><a href="#Waypoint-Proxy" class="headerlink" title="Waypoint Proxy"></a>Waypoint Proxy</h2><p>为了使用7层授权控制，在对应的命名空间应当添加<code>waypoint proxy</code>。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/istio/" class="print-no-link">#istio</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ISTIO Ambient学习</div>
+      <div>http://example.com/2025/08/17/istio-setup/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月17日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/08/17/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
